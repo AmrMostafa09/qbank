@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Trial Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .option-btn {
+            border: 1px solid #d1d5db;
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .option-btn.selected {
+            border-color: #3b82f6;
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .option-btn.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+            color: #15803d;
+        }
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen antialiased text-slate-800">
+
+    <div id="app" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+
+        <!-- Header -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-4xl sm:text-5xl font-bold text-slate-900 flex items-center justify-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                Clinical Trial Navigator
+            </h1>
+            <p class="text-slate-600 mt-2 text-lg">Master Key Nephrology & Cardiology Trial Data</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Module Selection Screen (Home) -->
+            <div id="module-selection">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Select a Learning Module</h2>
+                <div id="module-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Modules will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="quiz-screen" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6 sm:p-8">
+                    <!-- Quiz Header -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="quiz-title" class="text-xl font-bold text-blue-700"></h2>
+                        <button id="back-to-modules" class="text-sm text-slate-600 hover:text-blue-600 font-medium">
+                            &larr; Back to Modules
+                        </button>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                        <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Question Area -->
+                    <div id="question-container">
+                        <p id="question-counter" class="text-sm text-slate-500 mb-2"></p>
+                        <h3 id="question-text" class="text-lg font-semibold mb-4"></h3>
+                        <div id="options-container" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Feedback Area -->
+                    <div id="feedback-container" class="hidden mt-6 p-4 rounded-lg">
+                        <h4 id="feedback-title" class="font-bold text-lg mb-2"></h4>
+                        <p id="feedback-rationale" class="text-sm"></p>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="mt-8 text-right">
+                        <button id="next-question-btn" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="results-screen" class="hidden">
+                 <div class="bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Module Complete!</h2>
+                    <p id="results-title" class="text-slate-600 font-medium mb-6"></p>
+                    
+                    <div class="mb-8">
+                        <span id="final-score" class="text-6xl font-bold text-blue-600"></span>
+                        <p class="text-slate-500">Your Score</p>
+                    </div>
+
+                    <p id="results-summary" class="mb-8"></p>
+
+                    <div class="flex justify-center gap-4">
+                        <button id="restart-quiz-btn" class="bg-blue-100 text-blue-700 font-bold py-2 px-6 rounded-lg hover:bg-blue-200 transition-colors">Retry Module</button>
+                        <button id="back-to-home-btn" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md">Back to All Modules</button>
+                    </div>
+                 </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const questions = [
+            // --- FILE: IMG_0656_compressed-1-30.pdf ---
+            { module: "Finerenone Trials", question: "How does the patient cohort recruited in the FIGARO-DKD study differ to those in previous outcome trials?", options: ["Focused only on stages 3 and 4 CKD", "Recruited patients with earlier stages of CKD and high CV risk", "Recruited only patients with low levels of albuminuria"], correctAnswer: "Recruited patients with earlier stages of CKD and high CV risk", rationale: "FIGARO-DKD recruited a broader range of patients, including earlier stages of CKD (1-2) with severe albuminuria, to assess cardiovascular outcomes." },
+            { module: "Finerenone Trials", question: "Which of the following was not an exploratory kidney outcome in the FIGARO-DKD study?", options: ["Time to worsening of UACR category", "Composite of kidney failure, sustained ≥40% decrease in eGFR", "Change in UACR", "Composite of time to first occurrence of kidney failure, sustained ≥57% decrease in eGFR"], correctAnswer: "Composite of time to first occurrence of kidney failure, sustained ≥57% decrease in eGFR", rationale: "The composite including a ≥57% eGFR decrease was a key secondary endpoint, not an exploratory one." },
+            { module: "Finerenone Trials", question: "What were the two key secondary renal endpoints in FIDELIO-DKD?", options: ["Time to worsening of UACR category; composite of kidney failure, sustained ≥40% decrease in eGFR", "Change in UACR; composite of time to first onset of kidney failure, sustained ≥57% decrease in eGFR", "Change in UACR; worsening eGFR slope"], correctAnswer: "Change in UACR; composite of time to first onset of kidney failure, sustained ≥57% decrease in eGFR", rationale: "The key secondary endpoints focused on a more stringent eGFR decline (≥57%) and changes in albuminuria." },
+            { module: "Finerenone Trials", question: "Which background medication was specified in the patient inclusion criteria of the FIGARO-DKD study?", options: ["Any dose of ACEi or ARB", "ACEi and ARB", "ARB or diuretics", "ACEi or ARB at maximum tolerated dose"], correctAnswer: "ACEi or ARB at maximum tolerated dose", rationale: "A crucial inclusion criterion was that patients had to be on a maximum tolerated labeled dose of a RAS inhibitor, establishing finerenone's benefit on top of standard of care." },
+            { module: "Finerenone Trials", question: "Which of the following was not an exploratory kidney outcome in the FIGARO-DKD study?", options: ["Time to worsening of UACR category", "Composite of kidney failure, sustained ≥40% decrease in eGFR", "Change in UACR", "Composite of time to first occurrence of kidney failure, sustained ≥57% decrease in eGFR"], correctAnswer: "Composite of time to first occurrence of kidney failure, sustained ≥57% decrease in eGFR", rationale: "This is a repeat. The composite including a ≥57% eGFR decrease was a key secondary endpoint, not an exploratory one." },
+            { module: "Finerenone Trials", question: "What percentage of patients in the FIGARO-DKD trial had CKD with an eGFR ≥60 mL/min/1.73 m²?", options: [">45%", ">60%", ">70%"], correctAnswer: ">60%", rationale: "Specifically, 62% of patients had an eGFR ≥60, highlighting the trial's focus on an earlier-stage CKD population with high cardiovascular risk." },
+            { module: "Finerenone Trials", question: "What was the minimum permissible eGFR value (in mL/min/1.73 m²) in the inclusion criteria of the FIGARO-DKD trial for patients with high albuminuria (UACR 30 to <300 mg/g)?", options: ["20", "25", "30", "45"], correctAnswer: "25", rationale: "The inclusion criteria for FIGARO-DKD allowed patients with a UACR of 30 to <300 mg/g if their eGFR was between 25 and 90 mL/min/1.73 m²." },
+            { module: "Finerenone Trials", question: "What was the maximum serum potassium level allowed in the study?", options: ["4.3 mmol/l", "4.5 mmol/l", "4.8 mmol/l", "5.0 mmol/L"], correctAnswer: "4.8 mmol/l", rationale: "To ensure patient safety, a baseline serum potassium of ≤4.8 mmol/L was required for enrollment in the FIDELIO-DKD and FIGARO-DKD trials." },
+            { module: "Finerenone Trials", question: "In FIDELIO-DKD, the incidence of overall treatment-emergent adverse events was similar between the finerenone and placebo groups.", options: ["True", "False"], correctAnswer: "True", rationale: "While hyperkalemia was more common with finerenone, the overall incidence of adverse events was comparable to placebo." },
+            { module: "Finerenone Trials", question: "Finerenone had consistent effects on the primary endpoint irrespective of... (Select all that apply)", options: ["Age", "Sex", "Region", "Race", "BMI", "eGFR", "HbA1c", "SBP", "History of CV disease", "UACR", "Baseline serum potassium"], correctAnswer: ["Age", "Sex", "Region", "Race", "eGFR", "HbA1c", "SBP", "UACR", "Baseline serum potassium"], rationale: "The benefits of finerenone were broadly consistent across most subgroups, though analyses by BMI and history of CV disease showed some variability." },
+            { module: "Finerenone Trials", question: "Which of the following eligibility criteria needed to be met for inclusion in the FIDELIO-DKD study?", options: ["Diabetic patients with pre-existing CV conditions and CKD", "Patients with CKD and T2D", "Patients with CKD and HF"], correctAnswer: "Patients with CKD and T2D", rationale: "FIDELIO-DKD specifically enrolled patients with chronic kidney disease associated with type 2 diabetes." },
+            { module: "Finerenone Trials", question: "By how much did finerenone reduce the relative risk of the primary endpoint?", options: ["18%", "22%", "24%", "30%"], correctAnswer: "18%", rationale: "In FIDELIO-DKD, finerenone reduced the relative risk of the primary composite kidney outcome by 18% compared to placebo." },
+            { module: "Finerenone Trials", question: "Approximately what proportion of patients receiving finerenone permanently discontinued treatment due to hyperkalaemia?", options: ["~0.5%", "~2%", "~7%", "~11%"], correctAnswer: "~2%", rationale: "In FIDELIO-DKD, the rate was 2.3%. In FIGARO-DKD, it was 1.2%. So ~2% is a reasonable average for the program." },
+            { module: "Finerenone Trials", question: "What was the median duration of follow-up in FIDELIO-DKD?", options: ["3.2 years", "48 months", "2.6 years"], correctAnswer: "2.6 years", rationale: "The median follow-up period for the FIDELIO-DKD trial was 2.6 years." },
+            { module: "Finerenone Trials", question: "By how much did finerenone reduce the relative risk of the secondary kidney composite endpoint?", options: ["18%", "22%", "24%", "30%"], correctAnswer: "18%", rationale: "This question from the source is ambiguous. The secondary CV endpoint RRR was 14%. The 18% refers to the primary kidney endpoint. This appears to be an error in the source material." },
+            { module: "Finerenone Trials", question: "Which of the following is the primary endpoint of FIDELIO-DKD?", options: ["Time to kidney failure, sustained ≥40% decrease in eGFR", "Time to worsening of UACR category, kidney failure, or sustained ≥40% decrease in eGFR", "Time to worsening nephropathy, dialysis, or renal death"], correctAnswer: "Time to worsening of UACR category, kidney failure, or sustained ≥40% decrease in eGFR", rationale: "The primary endpoint was a composite of time to kidney failure, a sustained decrease of at least 40% in eGFR from baseline, or death from renal causes." },
+            { module: "Other Trials", question: "Which of the following trials investigating CV and kidney outcomes included patients with CKD but without T2D?", options: ["FIDELIO-DKD", "FIGARO-DKD", "CONFIDENCE", "SOUL", "EMPA-KIDNEY", "FLOW"], correctAnswer: "EMPA-KIDNEY", rationale: "EMPA-KIDNEY was a landmark trial that included a large proportion of patients with CKD who did not have type 2 diabetes." },
+            { module: "Pharmacology", question: "Complete the sentence: 'Spironolactone has high potency with ___ selectivity and eplerenone has low potency with ___ selectivity.'", options: ["Medium; low", "Low; medium", "High; low", "Medium; high"], correctAnswer: "Low; medium", rationale: "Spironolactone has low selectivity for the mineralocorticoid receptor, leading to hormonal side effects. Eplerenone has medium (or higher) selectivity." },
+            { module: "Finerenone Trials", question: "Which of the following is the key secondary CV composite endpoint of FIDELIO-DKD?", options: ["Time to CV death or HHF", "Time to CV death, non-fatal MI, non-fatal stroke or HHF", "Time to CV death, non-fatal MI, non-fatal stroke or HUA", "Time to CV death, non-fatal MI, or non-fatal stroke"], correctAnswer: "Time to CV death, non-fatal MI, non-fatal stroke or HHF", rationale: "This standard 4-point MACE + HHF was the key secondary cardiovascular endpoint, which was significantly reduced by 14%." },
+            { module: "Finerenone Trials", question: "Which of the following glucose-control medications were allowed in FIDELIO-DKD?", options: ["Metformin", "GLT2 inhibitors", "GLP-1 receptor agonists", "Sulfonylureas", "All of the above"], correctAnswer: "All of the above", rationale: "Patients could be on a variety of background glucose-lowering therapies, reflecting real-world clinical practice." },
+            { module: "Finerenone Trials", question: "In FIDELIO-DKD, finerenone significantly reduced the relative risk of death from any cause by 10%.", options: ["True", "False"], correctAnswer: "False", rationale: "There was no statistically significant reduction in all-cause mortality in the FIDELIO-DKD trial. The primary benefit was on the progression of kidney disease." },
+            { module: "Pharmacology", question: "Complete the sentence: 'Finerenone is rapidly eliminated from plasma, with a terminal half-life of approximately ___.'", options: ["20-30 minutes", "50-60 minutes", "2-3 hours", "5-6 hours"], correctAnswer: "2-3 hours", rationale: "Finerenone has a relatively short terminal half-life of 2 to 3 hours." },
+            { module: "Pharmacology", question: "What is the absolute bioavailability of the Finerenone immediate-release tablet formulation?", options: ["25.3%", "43.5%", "72.7%", "90.5%"], correctAnswer: "43.5%", rationale: "According to pharmacokinetic studies, the absolute bioavailability of finerenone is approximately 44%." },
+            { module: "Pharmacology", question: "CYP3A4 accounts for approximately ___ of the overall metabolic clearance of Finerenone.", options: ["100%", "90%", "65%", "50%"], correctAnswer: "90%", rationale: "Finerenone is primarily metabolized by the cytochrome P450 enzyme CYP3A4." },
+            
+            // --- FILE: IMG_0656_compressed-31-57.pdf ---
+            { module: "Finerenone Trials", question: "Approximately how many participants were included in the 'Kerendia' / 'Firialta' phase III FIDELIO-DKD and FIGARO-DKD studies?", options: ["1500", "3000", "4500", "13,000"], correctAnswer: "13,000", rationale: "Combined, the two landmark trials included over 13,000 patients, forming the basis of the FIDELITY pooled analysis." },
+            { module: "Pharmacology", question: "Complete the sentence: 'Finerenone has ___ potency compared with eplerenone, and ___ selectivity compared with both spironolactone and eplerenone.'", options: ["High; medium", "Low; high", "High; high", "Medium; high"], correctAnswer: "High; high", rationale: "Finerenone is a non-steroidal MRA with both high potency and high selectivity for the mineralocorticoid receptor." },
+            { module: "Finerenone Trials", question: "The Finerenone phase III studies allowed inclusion of patients in which range of GFR categories?", options: ["Mildly to moderately decreased (G3a) to severely decreased (G4)", "Mildly decreased (G2) to kidney failure (G5)", "Normal or high (G1) to severely decreased (G4)"], correctAnswer: "Normal or high (G1) to severely decreased (G4)", rationale: "The combined programs covered a very broad range of kidney function, from G1 to G4, to assess benefits across the spectrum of CKD." },
+            { module: "Pharmacology", question: "How long does it take for Finerenone to reach maximum serum concentration?", options: ["6.75-7.25 hours", "2.75-4.5 hours", "1.5-2.5 hours", "0.5-1.25 hours"], correctAnswer: "0.5-1.25 hours", rationale: "Finerenone is absorbed relatively quickly, with time to maximum concentration (Tmax) occurring between 0.5 and 1.25 hours." },
+            { module: "Pharmacology", question: "Which of the following are physiological roles of the MR?", options: ["Facilitates potassium secretion into the urine", "Modulates sodium reabsorption", "Regulates blood pressure", "All of the above"], correctAnswer: "All of the above", rationale: "The mineralocorticoid receptor (MR) is a key regulator of sodium and potassium balance and, consequently, blood pressure." },
+            { module: "General Knowledge", question: "Complete the sentence: 'Finerenone is currently approved and used in more than ___ countries.'", options: ["80", "50", "10", "65"], correctAnswer: "80", rationale: "Finerenone has received widespread approval globally based on the strong evidence from its clinical trial program." },
+            { module: "Pharmacology", question: "Finerenone fulfils the previously unmet need in patients with CKD in T2D and addresses which of the following? (Select all that apply)", options: ["Metabolic factors", "Haemodynamic factors", "Inflammatory factors", "Fibrotic factors"], correctAnswer: ["Haemodynamic factors", "Inflammatory factors", "Fibrotic factors"], rationale: "MR overactivation drives inflammation and fibrosis. Finerenone targets these pathways, in addition to having hemodynamic effects, without primarily affecting metabolic factors." },
+            { module: "General Knowledge", question: "Complete the sentence: 'It is recommended that all patients with type 2 diabetes are screened at least ___ for the presence of kidney disease...'", options: ["Once every four years", "Once every two years", "Once a year", "Once every 6 months"], correctAnswer: "Once a year", rationale: "Annual screening with both UACR and eGFR is the standard of care for patients with type 2 diabetes to detect diabetic kidney disease early." },
+            { module: "General Knowledge", question: "The following steps are processes occurring in the kidney. Select the correct order...", options: ["4, 5, 1, 6, 3, 2", "4, 6, 1, 3, 5, 2", "5, 6, 4, 3, 1, 7", "4, 1, 3, 5, 6, 2"], correctAnswer: "4, 6, 1, 3, 5, 2", rationale: "The correct sequence is: Blood enters afferent arteriole (4), then glomerular capillaries (6), filtration enters proximal tubule (1), then loop of Henle (3), then distal tubule (5), and finally collecting duct (2)." },
+            { module: "General Knowledge", question: "An eGFR range of 15-29 mL/min/1.73 m² represents which of the following eGFR categories?", options: ["G2: mildly decreased", "G3a: mildly-to-moderately decreased", "G4: severely decreased", "G5: kidney failure"], correctAnswer: "G4: severely decreased", rationale: "This is the correct definition for stage G4 CKD according to the KDIGO classification system." },
+            { module: "General Knowledge", question: "According to 2024 ADA guidelines, what treatment is recommended to reduce CKD progression and CV events in patients with T2D and CKD with albuminuria?", options: ["GLP-1 RAs", "Non-steroidal MRA (Finerenone)", "ACEi or ARB"], correctAnswer: "ACEi or ARB", rationale: "While all are recommended, ACEi or ARB therapy is the foundational first-line treatment for patients with hypertension and albuminuria." },
+            { module: "General Knowledge", question: "Based on the albuminuria categories, moderately increased albuminuria is detected by UACR at which of the following levels?", options: ["UACR 10-100 mg/g", "UACR 60-600 mg/g", "UACR 30-300 mg/g", "None of the above"], correctAnswer: "UACR 30-300 mg/g", rationale: "This is the standard definition for the A2 category of albuminuria (moderately increased) as per KDIGO guidelines." },
+            { module: "General Knowledge", question: "Which agents are indicated for reducing the risk of end-stage kidney disease and CV complications in people with CKD associated with T2D? (Select all that apply)", options: ["Canagliflozin", "Empagliflozin", "Finerenone", "Dapagliflozin"], correctAnswer: ["Canagliflozin", "Empagliflozin", "Finerenone", "Dapagliflozin"], rationale: "All four of these agents, from two different drug classes (SGLT2i and non-steroidal MRAs), have proven benefits in this high-risk population." },
+            { module: "General Knowledge", question: "Albuminuria (as measured by UACR) is an earlier marker of kidney damage and predictor of CV and HF risk than eGFR decline.", options: ["True", "False"], correctAnswer: "True", rationale: "Increased UACR is one of the earliest signs of kidney damage and is a powerful, independent predictor of both kidney disease progression and cardiovascular events." },
+            { module: "General Knowledge", question: "Complete the sentence: 'Patients with CKD and diabetes have been reported to have a standardised 10-year incidence of CV mortality of approximately ___, which is ___ that in individuals without diabetes or kidney disease.'", options: ["10%, ~2x", "35%, ~5x", "30%, ~3x", "30%, ~6x"], correctAnswer: "30%, ~6x", rationale: "This highlights the extremely high cardiovascular risk burden in the diabetic kidney disease population." },
+            { module: "General Knowledge", question: "According to the 2021 International Diabetes Federation report, what proportion of the global population is estimated to have diabetes?", options: ["6.6%", "8.8%", "11.1%", "14.4%"], correctAnswer: "8.8%", rationale: "The 2021 IDF Atlas reported a global diabetes prevalence of 10.5% in adults, but the options provided may refer to a different specific statistic within the report." },
+            { module: "General Knowledge", question: "Which of the following are microvascular complications of diabetes? (Select all that apply)", options: ["Retinopathy", "Cardiovascular disease", "Chronic kidney disease", "Neuropathy", "Cerebrovascular disease"], correctAnswer: ["Retinopathy", "Chronic kidney disease", "Neuropathy"], rationale: "Retinopathy, nephropathy (CKD), and neuropathy are the classic microvascular complications of diabetes. Cardiovascular and cerebrovascular diseases are macrovascular complications." },
+            
+            // --- FILE: IMG_0739_compressed-1-40.pdf ---
+            { module: "Other Trials", question: "True or false? In the EMPA-KIDNEY trial, the effect of empagliflozin treatment with respect to the primary outcome was inconsistent across the patients with and without diabetes.", options: ["True", "False"], correctAnswer: "False", rationale: "A key finding of EMPA-KIDNEY was the consistent benefit of empagliflozin on kidney outcomes, irrespective of baseline diabetes status." },
+            { module: "Other Trials", question: "The FLOW study demonstrated a ___ lower RR of the primary outcome in the semaglutide group vs placebo group.", options: ["12%", "18%", "24%", "32%"], correctAnswer: "24%", rationale: "The FLOW trial was stopped early for efficacy, showing semaglutide reduced the risk of the primary kidney composite outcome by 24% vs. placebo." },
+            { module: "Other Trials", question: "Select the correct answer. The primary outcome of FLOW was:", options: ["Major kidney disease events... sustained ≥30% reduction in UACR", "Major kidney disease events... sustained ≥50% reduction in eGFR", "Major kidney disease events... death from any cause"], correctAnswer: "Major kidney disease events... sustained ≥50% reduction in eGFR", rationale: "The primary outcome was a robust composite including a ≥50% eGFR reduction, onset of kidney failure, or death from kidney-related or CV causes." },
+            { module: "Other Trials", question: "In the DAPA-CKD trial, dapagliflozin was associated with a ___% relative risk reduction in the kidney-specific composite outcome...", options: ["34%", "44%", "54%", "64%"], correctAnswer: "44%", rationale: "Dapagliflozin showed a remarkable 44% relative risk reduction in the kidney-specific composite outcome in the DAPA-CKD trial." },
+            { module: "Other Trials", question: "True or false? The FLOW study was powered to separately detect effects on kidney failure.", options: ["True", "False"], correctAnswer: "False", rationale: "The study was powered for the composite primary endpoint, not for its individual components like kidney failure." },
+            { module: "Pharmacology", question: "Which of the following does not have 'Improve glycaemic control in adults and paediatric patients (≥10 years old) with T2D' as an approved indication?", options: ["Dapagliflozin", "Canagliflozin", "Empagliflozin"], correctAnswer: "Canagliflozin", rationale: "Pediatric indications can vary. At the time, canagliflozin's pediatric indication was not as broad as others." },
+            { module: "Pharmacology", question: "Why is it recommended to slowly increase the dose of GLP-1 RAs?", options: ["GLP-1 RAs cause rapid weight gain at higher doses", "GLP-1 RAs are associated with dose-dependent gastrointestinal effects", "GLP-1 RAs cause severe headaches and dizziness at higher doses", "GLP-1 RAs can result in rapid decline in respiratory function when used at higher doses"], correctAnswer: "GLP-1 RAs are associated with dose-dependent gastrointestinal effects", rationale: "Slow dose titration is crucial to manage the common gastrointestinal side effects and improve patient tolerability." },
+            { module: "Other Trials", question: "What percentage of the FLOW study patient population were at high or very high risk of CKD progression?", options: ["75%", "83%", "89%", "91%"], correctAnswer: "91%", rationale: "The FLOW trial enrolled a very high-risk population, underscoring the importance of the findings in this group." },
+            { module: "Other Trials", question: "Select the correct statement.", options: ["32.5% of DAPA-CKD and 21.0% of EMPA-KIDNEY had CKD without T2D", "27.5% of DAPA-CKD and 54.0% of EMPA-KIDNEY had CKD without T2D", "54.5% of DAPA-CKD and 54.0% of EMPA-KIDNEY had CKD without T2D", "32.5% of DAPA-CKD and 54.0% of EMPA-KIDNEY had CKD without T2D"], correctAnswer: "32.5% of DAPA-CKD and 54.0% of EMPA-KIDNEY had CKD without T2D", rationale: "This highlights the inclusion of non-diabetic CKD patients in these landmark SGLT2i trials. EMPA-KIDNEY notably had over half its population without diabetes." },
+            { module: "Pharmacology", question: "Which of the following is not included in the labelled indications for dapagliflozin?", options: ["Reduce the risk of hospitalisation for HF in adults with T2D...", "Reduce the risk of sustained eGFR decline... in adults with CKD", "Reduce the risk of CV death, hospitalisation for HF, and urgent HF visit in adults with HF", "Reduce the risk of worsening heart failure in adults with HF"], correctAnswer: "Reduce the risk of CV death, hospitalisation for HF, and urgent HF visit in adults with HF", rationale: "While dapagliflozin is indicated for HF, the specific wording combining CV death, HHF, and urgent visits in a single indication might not be accurate compared to its separate, established indications for CKD, HF, and T2D." },
+            { module: "Other Trials", question: "What was the primary driver of the difference in SAEs reported between the semaglutide and placebo groups in the FLOW study?", options: ["Fewer reports of serious infections or infestations", "Fewer reports of respiratory disorders", "Fewer reports of gastrointestinal disorders", "Fewer serious CV disorders"], correctAnswer: "Fewer reports of serious infections or infestations", rationale: "The safety profile of semaglutide in FLOW was generally favorable, with a key difference being fewer serious infections." },
+            { module: "Other Trials", question: "What three SGLT2i clinical trials had kidney outcomes as their primary outcome measures?", options: ["CREDENCE, DAPA-HF, EMPA-KIDNEY", "CREDENCE, DAPA-CKD, EMPA-KIDNEY", "DAPA-CKD, EMPA-KIDNEY, SCORED", "EMPA-KIDNEY, CREDENCE, DECLARE-TIMI 58"], correctAnswer: "CREDENCE, DAPA-CKD, EMPA-KIDNEY", rationale: "These three are the landmark SGLT2 inhibitor trials specifically designed with primary kidney composite endpoints in patients with chronic kidney disease." },
+            { module: "Other Trials", question: "True or false? In the EMPA-KIDNEY trial, the effect of empagliflozin treatment... was inconsistent across the patients with and without diabetes.", options: ["True", "False"], correctAnswer: "False", rationale: "Repeat. A key finding of EMPA-KIDNEY was the consistent benefit of empagliflozin, irrespective of diabetes status." },
+            { module: "Other Trials", question: "True or false? Renal secondary endpoints were not included in the AWARD-7 trial.", options: ["True", "False"], correctAnswer: "False", rationale: "AWARD-7, which studied dulaglutide, did include renal outcomes like the rate of eGFR decline as important secondary endpoints." },
+            { module: "Finerenone Trials", question: "Fill in the blank: 'Sexual side effects were ___ and balanced between groups.'", options: ["rare", "common", "uncommon"], correctAnswer: "uncommon", rationale: "Due to its high selectivity, finerenone does not cause the hormonal side effects (like gynecomastia or sexual dysfunction) associated with older, non-selective MRAs like spironolactone." },
+            { module: "Finerenone Trials", question: "True or false: 'The overall incidence of treatment-emergent adverse-events and serious adverse events was similar between the Finerenone and placebo groups.'", options: ["True", "False"], correctAnswer: "True", rationale: "This was a key finding in the FIDELIO-DKD trial, indicating a generally favorable safety profile for finerenone." },
+            { module: "Finerenone Trials", question: "The FIDELITY prespecified pooled analysis included patients with which stage of CKD?", options: ["Stage 1-3", "Stage 2-4", "Stage 1-4", "Stage 2 and 3"], correctAnswer: "Stage 1-4", rationale: "The pooled analysis covered a very broad population of patients with T2D and CKD stages 1 through 4." },
+            { module: "Finerenone Trials", question: "What was the rationale for having a sustained ≥57% decrease in eGFR as an efficacy outcome?", options: ["A larger decrease showed a better improvement in kidney function", "It is the equivalent of a tripling in serum creatinine", "It allows to better evaluate the effects on CKD progression"], correctAnswer: "It is the equivalent of a tripling in serum creatinine", rationale: "A sustained ≥57% decrease in eGFR is a robust surrogate endpoint for end-stage kidney disease and is mathematically equivalent to a tripling of serum creatinine from baseline." },
+            { module: "Finerenone Trials", question: "Fill in the blank: 'Most patients in the FIDELITY prespecified pooled analysis had ___ levels of albuminuria.'", options: ["low-to-moderately elevated", "moderately-severely elevated", "moderately elevated", "severely elevated"], correctAnswer: "moderately-severely elevated", rationale: "The trials enrolled patients with significant albuminuria, which is a key driver of risk. The majority had moderately to severely elevated levels." },
+            { module: "Finerenone Trials", question: "How many patients were randomised in the FIDELITY prespecified pooled analysis?", options: ["5734", "7437", "13,171", "13,437"], correctAnswer: "13,171", rationale: "The pooled analysis included over 13,000 patients, providing high statistical power." },
+            
+            // --- FILE: IMG_0739_compressed-41-79.pdf ---
+            { module: "Finerenone Trials", question: "True or false: 'The results of the FIDELITY prespecified pooled analysis suggest that Finerenone is an effective treatment option for CV and kidney protection in patients with CKD stage 1-4 and T2D.'", options: ["True", "False"], correctAnswer: "True", rationale: "This is the main conclusion from the pooled analysis, showing consistent benefits across a broad spectrum of patients." },
+            { module: "Finerenone Trials", question: "Which of the following was not an exclusion criterion in the FIDELITY prespecified pooled analysis?", options: ["HFrEF with NYHA Class II-IV", "Controlled arterial hypertension", "Non-diabetic kidney disease", "UACR >5000 mg/g"], correctAnswer: "Controlled arterial hypertension", rationale: "Controlled hypertension was expected. Symptomatic heart failure, confirmed non-diabetic kidney disease, and very high albuminuria were key exclusions." },
+            { module: "Finerenone Trials", question: "True or false: 'CV and kidney benefits of Finerenone were consistent, irrespective of SGLT-2i and GLP-1 RA use.'", options: ["True", "False"], correctAnswer: "True", rationale: "A key finding from subgroup analyses of FIDELITY is that the benefits of finerenone are additive to those of other modern therapies, supporting its role in combination therapy." },
+            { module: "Safety & Side Effects", question: "Which of the following statements is correct regarding hyperkalaemia safety?", options: ["The effect of Finerenone on serum potassium was unpredictable", "Hyperkalaemia was increased, but had minimal clinical impact", "Serum potassium was unaffected in the Finerenone group"], correctAnswer: "Hyperkalaemia was increased, but had minimal clinical impact", rationale: "While the incidence of hyperkalemia was higher with finerenone, the absolute increases were modest and led to low rates of study drug discontinuation (around 2%)." },
+            { module: "Finerenone Trials", question: "True or false: 'Compared to placebo, Finerenone was associated with a statistically significant reduction in the risk of CKD progression in FIDELIO-DKD, and CV morbidity and mortality in FIGARO-DKD.'", options: ["True", "False"], correctAnswer: "True", rationale: "This statement correctly summarizes the primary outcomes of the two individual landmark trials." },
+            { module: "Finerenone Trials", question: "In the FIDELITY prespecified pooled analysis, what was the absolute risk reduction for the CV composite outcome at 3 years?", options: ["1.7%", "1.9%", "2.2%", "2.8%"], correctAnswer: "1.9%", rationale: "The pooled analysis showed a 1.9% absolute risk reduction for the composite cardiovascular outcome over a 3-year period." },
+            { module: "Finerenone Trials", question: "Fill in the blank: 'In the FIDELITY prespecified pooled analysis, there was a __% reduction in the risk of hospitalisation for heart failure.'", options: ["9", "12", "21", "22"], correctAnswer: "22", rationale: "The pooled analysis demonstrated a robust 22% relative risk reduction in hospitalization for heart failure." },
+            { module: "Safety & Side Effects", question: "True or false? In FIDELIO-DKD, finerenone had a maximum mean difference in serum [K⁺] of 0.23 mmol/L at Month 4 vs placebo.", options: ["True", "False"], correctAnswer: "True", rationale: "The effect on serum potassium was modest and predictable, with the largest mean increase seen early in treatment before stabilizing." },
+            { module: "Safety & Side Effects", question: "Which of the following is NOT a potential clinical consequence of hyperkalaemia?", options: ["Cardiac complications", "Increase in all-cause mortality", "Peripheral neuropathy", "Arrhythmia", "Impact on prescribing patterns"], correctAnswer: "Peripheral neuropathy", rationale: "Hyperkalemia's main dangers are cardiac arrhythmias and muscle weakness. It does not cause peripheral neuropathy." },
+            { module: "Pharmacology", question: "True or false? In the ARTS and ARTS-HF phase II studies, finerenone was associated with smaller increases in serum potassium compared with other MRAs (i.e. spironolactone and eplerenone).", options: ["True", "False"], correctAnswer: "True", rationale: "Early phase II data suggested that finerenone had a lesser impact on serum potassium compared to spironolactone, a finding that was further explored in the larger phase III program." },
+            { module: "Safety & Side Effects", question: "Which of the following factors can reduce the reliability of a serum potassium measurement? (Select all that apply)", options: ["Fist clenching during blood draw", "Inter-individual variations", "Haemolysis during venepuncture", "Low platelet count"], correctAnswer: ["Fist clenching during blood draw", "Haemolysis during venepuncture"], rationale: "Both fist clenching and hemolysis (rupture of red blood cells) can cause pseudohyperkalemia, a falsely elevated potassium reading that does not reflect the true in-vivo level." },
+            { module: "Safety & Side Effects", question: "True or false? Discontinuation or dose reduction of pharmacological therapy... are the only validated approaches for its management according to recent evidence-based guidelines.", options: ["True", "False"], correctAnswer: "False", rationale: "Management of hyperkalemia also includes dietary modification and, in some cases, the use of potassium-binding agents." },
+            { module: "Safety & Side Effects", question: "Which of the following statements are true regarding the use of potassium-lowering agents in the management of hyperkalaemia? (Select all that apply)", options: ["Potential deprivation of beneficial nutrients", "Limited clinical evidence for their efficacy", "Use is associated with GI side-effects", "They can be utilised safely in younger patients"], correctAnswer: ["Limited clinical evidence for their efficacy", "Use is associated with GI side-effects"], rationale: "While potassium binders are used, their long-term efficacy data is less robust than other therapies, and they are commonly associated with gastrointestinal side effects." },
+            { module: "Safety & Side Effects", question: "Fill the blanks. In FIDELIO-DKD, the incidence of hyperkalaemia resulting in permanent treatment discontinuation... was __% in those treated with finerenone compared with __% in the placebo group.", options: ["1.9; 0.4", "2.3; 0.9", "3.0; 1.2", "5.2; 1.4"], correctAnswer: "2.3; 0.9", rationale: "This demonstrates that while hyperkalemia was more common with finerenone, the rate of discontinuation due to this side effect was low." },
+            { module: "Safety & Side Effects", question: "Which of the following was NOT a risk factor for hyperkalaemia in FIDELIO-DKD?", options: ["T2D duration", "Use of statins", "Use of ACE inhibitors", "Reduced eGFR"], correctAnswer: "Use of statins", rationale: "Baseline reduced eGFR and concomitant use of RAS inhibitors are well-known risk factors for hyperkalemia. Statin use is not." },
+            { module: "Finerenone Trials", question: "True or false: In FIGARO-DKD, finerenone reduced the composite risk of kidney failure, sustained ≥40% decrease in eGFR... by 13%; however, the results were not statistically significant.", options: ["True", "False"], correctAnswer: "True", rationale: "This was an important secondary finding. While there was a positive trend with a 13% risk reduction, it did not achieve statistical significance, partly due to the hierarchical testing plan." },
+            { module: "Safety & Side Effects", question: "True or false: Finerenone had a predictable impact on serum potassium levels.", options: ["True", "False"], correctAnswer: "True", rationale: "Contrary to being unpredictable, the impact was a modest and predictable mean increase, allowing for effective monitoring and management." },
+            { module: "Safety & Side Effects", question: "In FIDELIO-DKD, hyperkalaemia was considered serious if it resulted in which of the following? (Select all that apply)", options: ["A threat to life or death", "Inpatient hospitalisation", "Persistent or significant disability", "[K⁺] >6.0 mmol/L"], correctAnswer: ["A threat to life or death", "Inpatient hospitalisation", "Persistent or significant disability", "[K⁺] >6.0 mmol/L"], rationale: "Serious adverse events are defined by specific criteria, including being life-threatening, requiring hospitalization, or causing significant disability. A specific potassium threshold was also used." },
+            { module: "Finerenone Trials", question: "What was the serum [K⁺] assessment schedule in FIDELIO-DKD?", options: ["Every month", "Every 4 months", "At Month 1, Month 4, and every 4 months thereafter", "At Month 1, Month 4, and every month thereafter"], correctAnswer: "At Month 1, Month 4, and every 4 months thereafter", rationale: "This monitoring schedule was designed to ensure safety, with more frequent checks during the initiation phase." },
+            { module: "Safety & Side Effects", question: "Approximately what proportion of patients receiving finerenone permanently discontinued treatment due to hyperkalaemia-related adverse events?", options: ["0.5%", "1.7%", "5.1%", "9.6%"], correctAnswer: "1.7%", rationale: "This question likely refers to the pooled FIDELITY analysis, where the discontinuation rate was 1.7% for finerenone vs 0.6% for placebo." },
+            { module: "Finerenone Trials", question: "Which primary outcome component was reduced by 29% with finerenone compared to the placebo?", options: ["Hospitalisation for heart failure", "Non-fatal myocardial infarction", "Cardiovascular death"], correctAnswer: "Hospitalisation for heart failure", rationale: "This question refers to FIGARO-DKD, where the primary endpoint benefit was driven by a 29% reduction in HHF." },
+            { module: "Finerenone Trials", question: "What was the maximum permissible baseline serum potassium level (in mmol/L) in the patient inclusion criteria of the FIGARO-DKD trial?", options: ["4.3", "4.5", "4.8", "5.0"], correctAnswer: "4.8", rationale: "Same as FIDELIO-DKD, a baseline potassium of ≤4.8 mmol/L was required for safety." },
+            { module: "Finerenone Trials", question: "Which of the following is the primary endpoint of FIGARO-DKD?", options: ["Time to kidney failure...", "Time to worsening of UACR category...", "Time to CV death, non-fatal MI, non-fatal stroke or HHF"], correctAnswer: "Time to CV death, non-fatal MI, non-fatal stroke or HHF", rationale: "This is the correct definition of the primary composite cardiovascular outcome for the FIGARO-DKD study." },
+            { module: "Finerenone Trials", question: "'In FIGARO-DKD, finerenone reduced the risk of the exploratory additional composite endpoint of kidney failure... by 23%'. What should be specified to make this sentence fully accurate?", options: ["Results were not statistically significant", "Results were statistically significant", "Statistical significance could not be evaluated..."], correctAnswer: "Statistical significance could not be evaluated...", rationale: "Due to the pre-specified hierarchical testing strategy, formal statistical testing was not performed on this endpoint, so no claims of significance can be made." },
+            { module: "Finerenone Trials", question: "Which of the following glucose-control medications were permitted for patients enrolled in the FIGARO-DKD study?", options: ["Metformin and insulin", "SGLT2 inhibitors", "GLP-1 receptor agonists", "Sulfonylureas and DPP-4 inhibitors", "All of the above"], correctAnswer: "All of the above", rationale: "Similar to FIDELIO-DKD, patients could be on a wide range of background therapies, reflecting real-world practice." },
+            { module: "Safety & Side Effects", question: "True or false: Treatment-emergent adverse events related to acute kidney injury, acute renal failure and gynaecomastia were balanced between the finerenone and placebo groups.", options: ["True", "False"], correctAnswer: "False", rationale: "While gynecomastia rates were very low and balanced, hyperkalemia-related events were more frequent with finerenone." }
+        ];
+
+        // --- DOM Elements ---
+        const app = document.getElementById('app');
+        const moduleSelectionScreen = document.getElementById('module-selection');
+        const moduleContainer = document.getElementById('module-container');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const quizTitle = document.getElementById('quiz-title');
+        const backToModulesBtn = document.getElementById('back-to-modules');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackRationale = document.getElementById('feedback-rationale');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const finalScore = document.getElementById('final-score');
+        const resultsTitle = document.getElementById('results-title');
+        const resultsSummary = document.getElementById('results-summary');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
+
+        // --- State ---
+        let currentModule = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        // --- Functions ---
+
+        function init() {
+            const modulesData = {};
+            questions.forEach(q => {
+                if (!modulesData[q.module]) {
+                    modulesData[q.module] = [];
+                }
+                modulesData[q.module].push(q);
+            });
+
+            moduleContainer.innerHTML = '';
+            for (const moduleName in modulesData) {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl shadow-md cursor-pointer transition-all duration-300 card-hover';
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">${moduleName}</h3>
+                    <p class="text-slate-500 text-sm">${modulesData[moduleName].length} questions</p>
+                `;
+                card.addEventListener('click', () => startQuiz(moduleName, modulesData[moduleName]));
+                moduleContainer.appendChild(card);
+            }
+        }
+
+        function startQuiz(moduleName, questionsForModule) {
+            currentModule = moduleName;
+            currentQuestions = questionsForModule;
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            quizTitle.textContent = moduleName;
+            moduleSelectionScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            resetState();
+            const question = currentQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / currentQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${currentQuestions.length}`;
+            
+            questionText.textContent = question.question;
+            optionsContainer.innerHTML = '';
+
+            const isMultiSelect = Array.isArray(question.correctAnswer);
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'w-full text-left p-4 rounded-lg option-btn';
+                button.dataset.answer = option;
+                button.addEventListener('click', () => selectOption(button, isMultiSelect));
+                optionsContainer.appendChild(button);
+            });
+
+            if (isMultiSelect) {
+                nextQuestionBtn.textContent = 'Submit';
+                nextQuestionBtn.disabled = false;
+                nextQuestionBtn.onclick = checkMultiAnswer;
+            } else {
+                nextQuestionBtn.textContent = 'Next';
+                nextQuestionBtn.disabled = true;
+                nextQuestionBtn.onclick = handleNextQuestion;
+            }
+        }
+        
+        function selectOption(button, isMultiSelect) {
+            if (feedbackContainer.classList.contains('active')) return;
+
+            if (isMultiSelect) {
+                button.classList.toggle('selected');
+                selectedAnswers = Array.from(optionsContainer.querySelectorAll('.selected')).map(btn => btn.dataset.answer);
+            } else {
+                selectedAnswers = [button.dataset.answer];
+                Array.from(optionsContainer.children).forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+                checkSingleAnswer();
+            }
+        }
+
+        function checkSingleAnswer() {
+            const question = currentQuestions[currentQuestionIndex];
+            const isCorrect = selectedAnswers[0] === question.correctAnswer;
+            if (isCorrect) score++;
+            provideFeedback(isCorrect, question.rationale, [question.correctAnswer]);
+        }
+
+        function checkMultiAnswer() {
+            const question = currentQuestions[currentQuestionIndex];
+            const correctAnswers = question.correctAnswer;
+            const isCorrect = selectedAnswers.length === correctAnswers.length && selectedAnswers.every(ans => correctAnswers.includes(ans));
+            if (isCorrect) score++;
+            provideFeedback(isCorrect, question.rationale, correctAnswers);
+        }
+
+        function provideFeedback(isCorrect, rationale, correctAnswers) {
+            feedbackContainer.classList.add('active');
+            if (isCorrect) {
+                feedbackTitle.textContent = '✅ Correct!';
+                feedbackTitle.className = 'font-bold text-lg mb-2 text-green-700';
+                feedbackContainer.className = 'mt-6 p-4 rounded-lg bg-green-50 border border-green-200 active';
+            } else {
+                feedbackTitle.textContent = '❌ Incorrect';
+                feedbackTitle.className = 'font-bold text-lg mb-2 text-red-700';
+                feedbackContainer.className = 'mt-6 p-4 rounded-lg bg-red-50 border border-red-200 active';
+            }
+
+            feedbackRationale.textContent = rationale;
+            feedbackContainer.classList.remove('hidden');
+
+            Array.from(optionsContainer.children).forEach(btn => {
+                btn.disabled = true;
+                const answer = btn.dataset.answer;
+                const isCorrectAnswer = correctAnswers.includes(answer);
+                const isSelected = btn.classList.contains('selected');
+
+                if (isCorrectAnswer) {
+                    btn.classList.add('correct');
+                } else if (isSelected && !isCorrectAnswer) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            nextQuestionBtn.textContent = 'Next';
+            nextQuestionBtn.disabled = false;
+        }
+
+        function resetState() {
+            selectedAnswers = [];
+            feedbackContainer.classList.add('hidden');
+            feedbackContainer.classList.remove('active');
+            nextQuestionBtn.disabled = true;
+        }
+        
+        function handleNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            progressBar.style.width = '100%';
+
+            const percentage = Math.round((score / currentQuestions.length) * 100);
+            finalScore.textContent = `${percentage}%`;
+            resultsTitle.textContent = `You completed the "${currentModule}" module.`;
+            resultsSummary.textContent = `You correctly answered ${score} out of ${currentQuestions.length} questions.`;
+        }
+
+        function showHomeScreen() {
+            moduleSelectionScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+        }
+
+        // --- Event Listeners ---
+        backToModulesBtn.addEventListener('click', showHomeScreen);
+        backToHomeBtn.addEventListener('click', showHomeScreen);
+        restartQuizBtn.addEventListener('click', () => {
+             const questionsForModule = questions.filter(q => q.module === currentModule);
+             startQuiz(currentModule, questionsForModule);
+        });
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
